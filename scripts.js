@@ -4,6 +4,7 @@ const cellSize = 100;
 
 let lastX = 0;
 let lastY = 0;
+let coords = {};
 
 let map = [
   0, 0, 0,
@@ -83,7 +84,7 @@ function drawBoard() {
 
 function drawX() {
   ctx.beginPath();
-  ctx.moveTo(-cellSize , -cellSize / 3);
+  ctx.moveTo(-cellSize / 3 , -cellSize / 3);
   ctx.lineTo(cellSize / 3, cellSize / 3);
   ctx.moveTo(cellSize / 3, -cellSize / 3);
   ctx.lineTo(-cellSize / 3, cellSize / 3);
@@ -101,15 +102,32 @@ function getCoords(e) {
   lastY = e.pageY - canvas.offsetTop;
 }
 
+// returns 0-8, depending on the cell clicked
 function getCellByCoords(x, y) {
-  return Math.floor(x / cellSize) % 3 + Math.floor(y / cellSize) % 3;
+  return Math.floor(x / cellSize) % 3 + Math.floor(y / cellSize) * 3;
+}
+
+function updateCell(cell) {
+  coords = {x: (cell % 3) * cellSize,
+            y: Math.floor(cell / 3) * cellSize};
+
+  ctx.save();
+  ctx.translate(coords.x + cellSize / 2, coords.y + cellSize / 2);
+  (map[cell] === 1 ? drawX(cell) : drawO(cell));
+  ctx.restore();
 }
 
 function play(e) {
+  // find where mouse is clicked
   getCoords(e);
+  // figure out what cell that is
   cell = getCellByCoords(lastX, lastY);
-  console.log(cell);
+  // is cell is already taken, do nothing;
+  if (map[cell] != BLANK) return;
+  // else, assign to current player
   map[cell] = currentPlayer;
+  // add an X or an O to cell
+  updateCell(cell);
 }
 
 createBoard();
